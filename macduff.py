@@ -45,7 +45,8 @@ expected_colors = np.flip(np.loadtxt(color_data, delimiter=','), 1)
 expected_colors = expected_colors.reshape(MACBETH_HEIGHT, MACBETH_WIDTH, 3)
 
 
-# a class to simplify the translation from c++
+# a class to simplify the translation from c++  
+# 2维框
 class Box2D:
     """
     Note: The Python equivalent of `RotatedRect` and `Box2D` objects 
@@ -75,7 +76,7 @@ class Box2D:
     def rrect(self):
         return self.center, self.size, self.angle
 
-
+# 返回图像中一个矩形内的平均颜色
 def crop_patch(center, size, image):
     """Returns mean color in intersection of `image` and `rectangle`."""
     x, y = center - np.array(size)/2
@@ -84,7 +85,7 @@ def crop_patch(center, size, image):
     return image[int(max(y0, 0)): int(min(y1, image.shape[0])),
                  int(max(x0, 0)): int(min(x1, image.shape[1]))]
 
-
+# 计算平均颜色
 def contour_average(contour, image):
     """Assuming `contour` is a polygon, returns the mean color inside it.
 
@@ -110,16 +111,16 @@ def contour_average(contour, image):
     color_sum = reduce(add, (image[y, x] for x, y in pts_inside_of_contour))
     return color_sum / len(pts_inside_of_contour)
 
-
+# 旋转矩形框的角点
 def rotate_box(box_corners):
     """NumPy equivalent of `[arr[i-1] for i in range(len(arr)]`"""
     return np.roll(box_corners, 1, 0)
 
-
+# 
 def check_colorchecker(values, expected_values=expected_colors):
     """Find deviation of colorchecker `values` from expected values."""
-    diff = (values - expected_values).ravel(order='K')
-    return sqrt(np.dot(diff, diff))
+    diff = (values - expected_values).ravel(order='K')  # 计算差值，并展平为一维数组
+    return sqrt(np.dot(diff, diff))  # 计算欧氏距离
 
 
 # def check_colorchecker_lab(values):
@@ -128,7 +129,7 @@ def check_colorchecker(values, expected_values=expected_colors):
 #     lab_expected = cv.cvtColor(expected_colors, cv.COLOR_BGR2Lab)
 #     return check_colorchecker(lab_values, lab_expected)
 
-
+# 绘制颜色方块
 def draw_colorchecker(colors, centers, image, radius):
     for observed_color, expected_color, pt in zip(colors.reshape(-1, 3),
                                                   expected_colors.reshape(-1, 3),
@@ -138,7 +139,7 @@ def draw_colorchecker(colors, centers, image, radius):
         cv.circle(image, (x, y), radius//4, observed_color.tolist(), -1)
     return image
 
-
+# 记录信息
 class ColorChecker:
     def __init__(self, error, values, points, size):
         self.error = error
@@ -531,3 +532,4 @@ if __name__ == '__main__':
         print('Usage: %s <input_image> <output_image> <(optional) patch_size>\n'
               '' % argv[0], file=stderr)
     # write_results(colorchecker, 'results.csv')
+
